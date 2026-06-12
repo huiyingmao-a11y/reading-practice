@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>英文演講導讀練習</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,300&display=swap');
+
+  :root {
+    --ink: #1a1614;
+    --paper: #f7f3ee;
+    --accent: #c04a2b;
+    --accent-light: #f0d9d2;
+    --muted: #7a6f68;
+    --border: #ddd5cc;
+    --active-bg: #c04a2b;
+    --active-text: #fff;
+    --hover-bg: #f0d9d2;
+    --zh-color: #3d5a80;
+    --zh-hover: #d6e5f4;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Source Serif 4', Georgia, serif;
+    min-height: 100vh;
+  }
+
+  header {
+    background: var(--ink);
+    color: #fff;
+    padding: 28px 40px 22px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  header h1 {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    line-height: 1.3;
+  }
+
+  header p {
+    font-size: 0.85rem;
+    color: #b0a89e;
+    font-style: italic;
+    max-width: 340px;
+    text-align: right;
+    line-height: 1.5;
+  }
+
+  .controls {
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    padding: 14px 40px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .mode-toggle {
+    display: flex;
+    gap: 0;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .mode-btn {
+    padding: 7px 18px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 0.82rem;
+    color: var(--muted);
+    font-family: 'Noto Serif TC', serif;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .mode-btn.active {
+    background: var(--ink);
+    color: #fff;
+  }
+
+  .rate-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.82rem;
+    color: var(--muted);
+    font-family: 'Noto Serif TC', serif;
+  }
+
+  .rate-control input {
+    width: 100px;
+    accent-color: var(--accent);
+  }
+
+  .rate-value {
+    min-width: 32px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .voice-select {
+    font-size: 0.82rem;
+    padding: 6px 10px;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    background: #fff;
+    color: var(--ink);
+    font-family: 'Noto Serif TC', serif;
+    cursor: pointer;
+    max-width: 220px;
+  }
+
+  .hint {
+    margin-left: auto;
+    font-size: 0.78rem;
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  .main {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 40px 40px 80px;
+  }
+
+  .slide-block {
+    margin-bottom: 44px;
+    border-left: 3px solid var(--border);
+    padding-left: 24px;
+    transition: border-color 0.2s;
+  }
+
+  .slide-block:hover {
+    border-color: var(--accent);
+  }
+
+  .slide-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-family: 'Noto Serif TC', serif;
+    margin-bottom: 10px;
+  }
+
+  .english-text {
+    font-size: 1.18rem;
+    line-height: 1.85;
+    margin-bottom: 14px;
+    color: var(--ink);
+  }
+
+  .chinese-text {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 0.95rem;
+    line-height: 1.9;
+    color: var(--muted);
+    border-top: 1px dashed var(--border);
+    padding-top: 12px;
+  }
+
+  /* Word/character spans */
+  .word {
+    display: inline;
+    cursor: pointer;
+    border-radius: 3px;
+    padding: 1px 2px;
+    transition: background 0.12s, color 0.12s;
+    position: relative;
+  }
+
+  .word:hover {
+    background: var(--hover-bg);
+    color: var(--ink);
+  }
+
+  .word.playing {
+    background: var(--active-bg);
+    color: var(--active-text);
+    border-radius: 3px;
+  }
+
+  .zh-word {
+    display: inline;
+    cursor: pointer;
+    border-radius: 2px;
+    padding: 1px 1px;
+    transition: background 0.12s;
+  }
+
+  .zh-word:hover {
+    background: var(--zh-hover);
+  }
+
+  .zh-word.playing {
+    background: var(--zh-color);
+    color: #fff;
+    border-radius: 2px;
+  }
+
+  /* Popup tooltip */
+  .tooltip {
+    position: fixed;
+    background: var(--ink);
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    pointer-events: none;
+    z-index: 1000;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translateY(-6px);
+    transition: opacity 0.15s, transform 0.15s;
+    font-family: 'Noto Serif TC', serif;
+    max-width: 320px;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.4;
+  }
+
+  .tooltip.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* No voice warning */
+  .no-voice-warning {
+    background: #fff3cd;
+    border: 1px solid #ffe082;
+    border-radius: 8px;
+    padding: 12px 20px;
+    margin-bottom: 28px;
+    font-size: 0.88rem;
+    color: #7a5f00;
+    font-family: 'Noto Serif TC', serif;
+    display: none;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 48px 0;
+  }
+
+  @media (max-width: 600px) {
+    .main { padding: 24px 20px 60px; }
+    header { padding: 20px; }
+    .controls { padding: 12px 20px; }
+    header p { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>英文演講導讀練習<br><small style="font-weight:300;font-size:0.75em;letter-spacing:0.08em;color:#b0a89e;">Reading Aloud Practice</small></h1>
+  <p>點擊任何英文字詞或中文文字，即可聆聽正確發音</p>
+</header>
+
+<div class="controls">
+  <div class="mode-toggle">
+    <button class="mode-btn active" id="btn-word" onclick="setMode('word')">英文逐字</button>
+    <button class="mode-btn" id="btn-phrase" onclick="setMode('phrase')">英文整句</button>
+    <button class="mode-btn" id="btn-zh" onclick="setMode('zh')">中文模式</button>
+  </div>
+
+  <div class="rate-control">
+    <span>語速</span>
+    <input type="range" id="rateSlider" min="0.5" max="1.5" step="0.1" value="0.9" oninput="updateRate(this.value)">
+    <span class="rate-value" id="rateVal">0.9×</span>
+  </div>
+
+  <select class="voice-select" id="voiceSelect" onchange="selectVoice()">
+    <option value="">載入語音中…</option>
+  </select>
+
+  <span class="hint">點擊文字即可播放 ▶</span>
+</div>
+
+<div class="main">
+  <div class="no-voice-warning" id="noVoiceWarn">
+    ⚠️ 您的裝置可能不支援英文語音，請先在系統設定中安裝英文（US/UK）語音包。
+  </div>
+
+  <div id="content"></div>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+// ─── Data ───────────────────────────────────────────────────────────────────
+const slides = [
+  { page: "P1",
+    en: `"My research is titled 'Beyond Power Imbalance: Teacher-Targeted Bullying in Taiwan.' This is a mixed-methods study, and I am very happy to share our data from 206 secondary school teachers with you all today."`,
+    zh: `我的研究題目是「超越權力失衡：探索台灣教師遭受職場霸凌的情境」。這是一項混合研究，今天很高興能與各位分享我們針對 206 位中學教師所做的研究數據。` },
+  { page: "P2",
+    en: `"Good morning! Before I begin, I want to apologize that my spoken English is a bit limited. I will try my best to be clear, and I really appreciate your patience and your time this morning."`,
+    zh: `大家早安！在開始之前，我想先為我不太流利的英文致歉。我會盡力表達清楚，也非常感謝大家今早的時間與包容。` },
+  { page: "P3",
+    en: `"In Taiwan, teachers have traditionally held high authority because of our Confucian culture. However, things are changing. Now, students and parents often bully teachers. We call this 'Power Inversion,' because the teacher is no longer the authority, but the target."`,
+    zh: `在台灣，受儒家文化影響，教師傳統上享有高度權威。然而，情況正在改變。現在，學生和家長常會霸凌教師。我們稱之為「權力倒置」，因為教師不再是權威，反而成了霸凌的目標。` },
+  { page: "P4",
+    en: `"My goal is to understand how bullying makes our teachers feel. I asked: 'How does bullying affect teacher emotions?' I hypothesized that different bullying situations will lead to different emotional responses, such as anxiety or shame."`,
+    zh: `我的目標是了解職場霸凌如何影響教師的情緒。我探討了「霸凌如何影響教師情緒？」，並假設不同的霸凌情境會導致不同的情緒反應，例如焦慮或羞恥感。` },
+  { page: "P5",
+    en: `"For this study, I used a questionnaire called the 'TTBS.' I surveyed 206 secondary school teachers in Taiwan to get a broad view. I collected both quantitative numbers and qualitative personal stories to make sure our findings are deep and accurate."`,
+    zh: `在這項研究中，我使用了「TTBS」量表。我調查了 206 位台灣中學教師以獲得廣泛的視野。我同時收集了量化數據與質性的個人敘事，以確保研究結果既深入又準確。` },
+  { page: "P6",
+    en: `"From the stories, I found five types of bullying: Student Disrespect, Verbal Aggression, Rule-Violation, Admin Disrespect, and Parental Humiliation. Among these, I found that 'Parental Humiliation' is the most serious and painful experience for teachers today."`,
+    zh: `透過分析這些敘事，我發現了五種霸凌類型：學生不尊重、言語攻擊、違反常規、行政不尊重，以及家長羞辱。其中，我發現「家長羞辱」是現今教師經歷過最嚴重且痛苦的經驗。` },
+  { page: "P7",
+    en: `"This table shows the definitions and the average scores for these five types of bullying. All scores are based on a 5-point scale. You can see how each type is defined based on the teachers' actual, painful experiences in their classrooms."`,
+    zh: `這張表格顯示了這五種霸凌類型的定義與平均得分。所有分數皆基於 5 分量表。各位可以看到每一種類型是如何根據教師在課堂上真實且痛苦的經驗所定義的。` },
+  { page: "P8",
+    en: `"When we look at the emotional impact, anxiety is the strongest feeling for teachers. Interestingly, 'Rule-Violation' makes teachers feel 'shame' because they tend to blame themselves for the student's behavior. Administrative disrespect, however, did not cause big changes."`,
+    zh: `在情緒影響方面，焦慮是教師最強烈的感受。有趣的是，「違反常規」會讓教師感到「羞恥」，因為他們傾向於將學生的行為歸咎於自己。然而，行政不尊重則沒有造成顯著的情緒改變。` },
+  { page: "P9",
+    en: `"Looking at this chart, you can clearly see that 'Parental Humiliation' causes the highest level of anxiety for teachers. This is a critical finding because it tells us that external pressure is destroying the mental health of our teachers."`,
+    zh: `從這張圖表可以清楚看到，「家長羞辱」會導致教師產生最高水平的焦慮。這是一個關鍵發現，因為它告訴我們，外部壓力正在摧毀教師的心理健康。` },
+  { page: "P10",
+    en: `"In our analysis, we found that more exposure to bullying leads to higher anxiety. Also, anxiety and shame often happen at the same time. Sadly, bullying makes teachers feel much less positive about their jobs, which hurts their passion for teaching."`,
+    zh: `在分析中，我們發現越常接觸霸凌，焦慮感就越高。此外，焦慮和羞恥感常同時發生。令人遺憾的是，霸凌讓教師對工作產生負面感受，這削弱了他們的教學熱情。` },
+  { page: "P11",
+    en: `"We identified four types of teachers. Some have low stress, but others suffer from high shame due to verbal attacks or high anxiety due to parental pressure. However, there is also a 'resilient group' who stay strong despite the stress."`,
+    zh: `我們辨識出四類教師。有些壓力較低，但有些則因言語攻擊而感到高度羞恥，或因家長壓力而極度焦慮。然而，也有一群「韌性群體」，他們在壓力下仍能保持堅強。` },
+  { page: "P12",
+    en: `"Most of our hypotheses were correct. The most important point is that anxiety is the main response to bullying, regardless of the situation. This confirms that bullying is a serious threat to teachers' psychological well-being."`,
+    zh: `我們大部分的假設都正確。最重要的一點是：無論身處何種情境，焦慮都是對霸凌的主要反應。這證實了霸凌對教師的心理健康構成了嚴重威脅。` },
+  { page: "P13",
+    en: `"Why does this happen? Parents now act like 'customers' who judge teachers' performance. Teachers lose their protection but are still expected to keep order. This creates a 'double-bind,' where teachers feel trapped and helpless in their own classrooms."`,
+    zh: `為什麼會這樣？現在家長就像審視教師表現的「顧客」。教師失去了保護，卻仍被要求維持秩序。這創造了一種「雙重束縛」，讓教師在教室中感到被困住且無助。` },
+  { page: "P14",
+    en: `"This shows that a 'one-size-fits-all' support system does not work. Teachers have different needs. Some need help with their self-esteem, while others need institutional advocacy to protect their professional rights and safety."`,
+    zh: `這顯示「一刀切」的支援系統是無效的。教師有不同的需求。有些人需要自尊方面的幫助，有些人則需要制度上的倡導來保護其專業權益與安全。` },
+  { page: "P15",
+    en: `"To solve this, I suggest 'Functional Decoupling.' Teachers should not work alone. We need professional teams to handle student issues, parent complaints, and administrative tasks. By sharing the load, we can protect our teachers effectively."`,
+    zh: `為了改善現狀，我建議「職能解耦」。教師不應孤軍奮戰。我們需要專業團隊來處理學生問題、家長投訴和行政工作。透過分擔重擔，我們才能有效保護教師。` },
+  { page: "P16",
+    en: `"This study has some limitations. For example, we need more male participants and long-term studies to see how bullying changes over several years. Future research should focus on how the 'resilient group' protects themselves from stress."`,
+    zh: `這項研究有一些限制。例如，我們需要更多男性受試者，並進行長期研究以觀察霸凌隨時間的變化。未來的研究應聚焦於「韌性群體」如何保護自己不受壓力影響。` },
+  { page: "P17",
+    en: `"In conclusion, TTB is a serious problem in Taiwan, and we need structural changes to protect our teachers. Thank you very much for your time today. I would be happy to answer any questions you may have!"`,
+    zh: `總結來說，職場霸凌在台灣是個嚴重的問題，我們需要結構性變革來保護教師。非常感謝大家今天撥冗聆聽，我很樂意回答各位的問題！` },
+];
+
+// ─── State ───────────────────────────────────────────────────────────────────
+let mode = 'word'; // 'word' | 'phrase' | 'zh'
+let rate = 0.9;
+let voices = [];
+let enVoice = null;
+let zhVoice = null;
+let currentSpan = null;
+let tooltip = document.getElementById('tooltip');
+
+// ─── Voice setup ─────────────────────────────────────────────────────────────
+function loadVoices() {
+  voices = speechSynthesis.getVoices();
+  if (!voices.length) return;
+
+  const sel = document.getElementById('voiceSelect');
+  sel.innerHTML = '';
+
+  // Filter English voices
+  const enVoices = voices.filter(v => v.lang.startsWith('en'));
+  const zhVoices = voices.filter(v => v.lang.startsWith('zh'));
+
+  enVoices.forEach((v, i) => {
+    const opt = document.createElement('option');
+    opt.value = 'en-' + i;
+    opt.textContent = `🇺🇸 ${v.name}`;
+    if (v.default || i === 0) opt.selected = true;
+    sel.appendChild(opt);
+  });
+
+  if (!enVoices.length) {
+    document.getElementById('noVoiceWarn').style.display = 'block';
+    const opt = document.createElement('option');
+    opt.textContent = '⚠️ 未找到英文語音';
+    sel.appendChild(opt);
+  }
+
+  // Set defaults
+  enVoice = enVoices.find(v => /en-US/i.test(v.lang) && /google|natural|premium/i.test(v.name))
+         || enVoices.find(v => /en-US/i.test(v.lang))
+         || enVoices[0] || null;
+
+  zhVoice = zhVoices.find(v => /zh-TW/i.test(v.lang))
+          || zhVoices[0] || null;
+}
+
+window.speechSynthesis.onvoiceschanged = loadVoices;
+loadVoices();
+
+function selectVoice() {
+  const sel = document.getElementById('voiceSelect');
+  const val = sel.value;
+  if (!val) return;
+  const idx = parseInt(val.split('-')[1]);
+  const enVoices = voices.filter(v => v.lang.startsWith('en'));
+  enVoice = enVoices[idx] || enVoice;
+}
+
+// ─── TTS ──────────────────────────────────────────────────────────────────────
+function speak(text, lang, spanEl) {
+  speechSynthesis.cancel();
+  if (currentSpan) currentSpan.classList.remove('playing');
+
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.rate = rate;
+  utter.lang = lang;
+
+  if (lang === 'zh-TW' && zhVoice) {
+    utter.voice = zhVoice;
+  } else if (lang.startsWith('en') && enVoice) {
+    utter.voice = enVoice;
+  }
+
+  if (spanEl) {
+    currentSpan = spanEl;
+    spanEl.classList.add('playing');
+    utter.onend = () => {
+      spanEl.classList.remove('playing');
+      if (currentSpan === spanEl) currentSpan = null;
+    };
+    utter.onerror = () => spanEl.classList.remove('playing');
+  }
+
+  speechSynthesis.speak(utter);
+}
+
+// ─── Rendering ───────────────────────────────────────────────────────────────
+function tokenizeEN(text) {
+  // Split into word tokens preserving punctuation attached to words
+  return text.match(/[\w'']+(?:['']\w+)*|[^\w\s]/g) || [];
+}
+
+function buildWordSpans(text, phraseText) {
+  const tokens = tokenizeEN(text);
+  return tokens.map(tok => {
+    const span = document.createElement('span');
+    // Is it a word (has letters)?
+    if (/[a-zA-Z]/.test(tok)) {
+      span.className = 'word';
+      span.textContent = tok;
+      span.dataset.word = tok;
+      span.addEventListener('click', (e) => {
+        if (mode === 'phrase') {
+          speak(phraseText, 'en-US', span);
+        } else {
+          speak(tok, 'en-US', span);
+        }
+        showTooltip(span, mode === 'phrase' ? '▶ 播放整句' : `▶ ${tok}`);
+      });
+    } else {
+      span.textContent = tok;
+    }
+    return span;
+  });
+}
+
+function buildZhSpans(text) {
+  const fragment = document.createDocumentFragment();
+  // Split into individual chars or number groups
+  const parts = text.match(/[0-9]+|[\u4e00-\u9fff\u3000-\u303f\uff00-\uffef「」『』、。，：；！？…—–～【】（）《》〈〉""]|[a-zA-Z]+|\s+/g) || [];
+  parts.forEach(part => {
+    if (/\s/.test(part)) {
+      fragment.appendChild(document.createTextNode(part));
+      return;
+    }
+    const span = document.createElement('span');
+    span.className = 'zh-word';
+    span.textContent = part;
+    if (/[\u4e00-\u9fff]/.test(part) || /[a-zA-Z0-9]/.test(part)) {
+      span.addEventListener('click', (e) => {
+        speak(part, 'zh-TW', span);
+        showTooltip(span, `▶ ${part}`);
+      });
+    }
+    fragment.appendChild(span);
+  });
+  return fragment;
+}
+
+function renderContent() {
+  const container = document.getElementById('content');
+  container.innerHTML = '';
+
+  slides.forEach((slide, idx) => {
+    const block = document.createElement('div');
+    block.className = 'slide-block';
+
+    const label = document.createElement('div');
+    label.className = 'slide-label';
+    label.textContent = slide.page;
+    block.appendChild(label);
+
+    if (mode !== 'zh') {
+      // English section
+      const enDiv = document.createElement('div');
+      enDiv.className = 'english-text';
+      // Rebuild word spans
+      const clean = slide.en;
+      const spanEls = buildWordSpans(clean, clean);
+      spanEls.forEach((el, i) => {
+        enDiv.appendChild(el);
+        // Space between word spans
+        if (i < spanEls.length - 1 && el.tagName === 'SPAN' && el.className === 'word') {
+          enDiv.appendChild(document.createTextNode(' '));
+        } else if (i < spanEls.length - 1 && el.tagName === 'SPAN' && el.className !== 'word') {
+          // punctuation, no space before, maybe space after if next is word
+        }
+      });
+      // Simpler: just rejoin
+      enDiv.innerHTML = '';
+      tokenizeEN(clean).forEach((tok, i, arr) => {
+        if (/[a-zA-Z]/.test(tok)) {
+          const sp = document.createElement('span');
+          sp.className = 'word';
+          sp.textContent = tok;
+          sp.addEventListener('click', () => {
+            const txt = mode === 'phrase' ? stripQuotes(clean) : tok;
+            speak(txt, 'en-US', sp);
+            showTooltip(sp, mode === 'phrase' ? '▶ 播放整句' : `▶ ${tok}`);
+          });
+          enDiv.appendChild(sp);
+          // Add space after word if next token is also a word (not punctuation)
+          if (i < arr.length - 1 && /[a-zA-Z0-9]/.test(arr[i+1])) {
+            enDiv.appendChild(document.createTextNode(' '));
+          } else if (i < arr.length - 1 && /[a-zA-Z0-9]/.test(arr[i+1][0] || '')) {
+            enDiv.appendChild(document.createTextNode(' '));
+          }
+        } else {
+          // punctuation or symbol
+          enDiv.appendChild(document.createTextNode(tok));
+          if (i < arr.length - 1 && /[a-zA-Z]/.test(arr[i+1])) {
+            enDiv.appendChild(document.createTextNode(' '));
+          }
+        }
+      });
+      block.appendChild(enDiv);
+
+      // Chinese reference
+      const zhDiv = document.createElement('div');
+      zhDiv.className = 'chinese-text';
+      zhDiv.appendChild(buildZhSpans(slide.zh));
+      block.appendChild(zhDiv);
+    } else {
+      // Chinese-only mode
+      const zhDiv = document.createElement('div');
+      zhDiv.className = 'chinese-text';
+      zhDiv.style.borderTop = 'none';
+      zhDiv.style.paddingTop = '0';
+      zhDiv.style.color = 'var(--ink)';
+      zhDiv.style.fontSize = '1.1rem';
+      zhDiv.appendChild(buildZhSpans(slide.zh));
+      block.appendChild(zhDiv);
+    }
+
+    container.appendChild(block);
+    if (idx < slides.length - 1) {
+      const hr = document.createElement('hr');
+      hr.className = 'divider';
+      container.appendChild(hr);
+    }
+  });
+}
+
+function stripQuotes(s) {
+  return s.replace(/["""'']/g, '').trim();
+}
+
+// ─── Tooltip ─────────────────────────────────────────────────────────────────
+let tooltipTimer = null;
+
+function showTooltip(el, text) {
+  const rect = el.getBoundingClientRect();
+  tooltip.textContent = text;
+  tooltip.style.left = (rect.left + rect.width / 2) + 'px';
+  tooltip.style.top = (rect.top - 38 + window.scrollY) + 'px';
+  tooltip.style.transform = 'translateX(-50%) translateY(-6px)';
+  tooltip.classList.add('show');
+  clearTimeout(tooltipTimer);
+  tooltipTimer = setTimeout(() => tooltip.classList.remove('show'), 1800);
+}
+
+// ─── Mode ────────────────────────────────────────────────────────────────────
+function setMode(m) {
+  mode = m;
+  ['word','phrase','zh'].forEach(id => {
+    document.getElementById('btn-' + id).classList.toggle('active', id === m);
+  });
+  renderContent();
+}
+
+function updateRate(v) {
+  rate = parseFloat(v);
+  document.getElementById('rateVal').textContent = rate.toFixed(1) + '×';
+}
+
+// ─── Init ────────────────────────────────────────────────────────────────────
+renderContent();
+</script>
+</body>
+</html>
